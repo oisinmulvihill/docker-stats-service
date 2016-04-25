@@ -8,8 +8,6 @@ MAINTAINER Oisin Mulvihill <oisin.mulvihill@gmail.com>
 RUN apt-get update -y && apt-get install -y \
         gcc \
         gettext \
-        postgresql-client \
-        libpq-dev \
         git-core \
         netcat \
         ca-certificates \
@@ -64,8 +62,6 @@ ENV influxdb_password root
 ENV influxdb_db stats_dev
 
 # auth details to prevent general access via the web:
-ENV access_token
-ENV access_secret
 ENV access_json /data/access.json
 
 ENV bind_interface 0.0.0.0
@@ -80,22 +76,27 @@ RUN echo > /home/stats/commit_versions.txt
 #
 WORKDIR /home/stats
 RUN git clone https://github.com/oisinmulvihill/evasion-common.git
+WORKDIR /home/evasion-common
 RUN echo "project_url:$(git config --get remote.origin.url),branch:$(git rev-parse --abbrev-ref HEAD),commit:$(git rev-parse --verify $(git rev-parse --abbrev-ref HEAD))" >> /home/stats/commit_versions.txt
 
 WORKDIR /home/stats
 RUN git clone https://github.com/oisinmulvihill/pytest-docker-service-fixtures.git
+WORKDIR /home/pytest-docker-service-fixtures
 RUN echo "project_url:$(git config --get remote.origin.url),branch:$(git rev-parse --abbrev-ref HEAD),commit:$(git rev-parse --verify $(git rev-parse --abbrev-ref HEAD))" >> /home/stats/commit_versions.txt
 
 WORKDIR /home/stats
 RUN git clone https://github.com/oisinmulvihill/apiaccesstoken.git
+WORKDIR /home/apiaccesstoken
 RUN echo "project_url:$(git config --get remote.origin.url),branch:$(git rev-parse --abbrev-ref HEAD),commit:$(git rev-parse --verify $(git rev-parse --abbrev-ref HEAD))" >> /home/stats/commit_versions.txt
 
 WORKDIR /home/stats
 RUN git clone https://github.com/oisinmulvihill/stats-client.git
+WORKDIR /home/stats-client
 RUN echo "project_url:$(git config --get remote.origin.url),branch:$(git rev-parse --abbrev-ref HEAD),commit:$(git rev-parse --verify $(git rev-parse --abbrev-ref HEAD))" >> /home/stats/commit_versions.txt
 
 WORKDIR /home/stats
 RUN git clone https://github.com/oisinmulvihill/stats-service.git
+WORKDIR /home/stats-service
 RUN echo "project_url:$(git config --get remote.origin.url),branch:$(git rev-parse --abbrev-ref HEAD),commit:$(git rev-parse --verify $(git rev-parse --abbrev-ref HEAD))" >> /home/stats/commit_versions.txt
 
 # Ready to run tests:

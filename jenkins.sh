@@ -5,14 +5,14 @@ JENKINS_USER=${JENKINS_USER:=jenkins}
 ROOT_DIR=${ROOT_DIR:=`pwd`}
 SCP_DB_DIR=${SCP_DB_DIR:=$ROOT_DIR}
 BOX_VERSION=${BOX_VERSION:=1.0.0}
-BOX_NAME=${BOX_NAME:=scp_api_service}
-SCP_API_IMAGE=supercarers/$BOX_NAME:$BOX_VERSION
-IMAGE_NAME=supercarers/$BOX_NAME:$BOX_VERSION
+BOX_NAME=${BOX_NAME:=stats_service}
+SCP_API_IMAGE=oisinmulvihill/$BOX_NAME:$BOX_VERSION
+IMAGE_NAME=oisinmulvihill/$BOX_NAME:$BOX_VERSION
 NO_CACHE=${NO_CACHE:=}
 ON_DEVBOX=${ON_DEVBOX:=}
 INTERACTIVE=${INTERACTIVE:=}
 # where build dir is to cache speeding up build times
-BUILD_DIR=${BUILD_DIR:=/tmp/scp_api_service_build}
+BUILD_DIR=${BUILD_DIR:=/tmp/stats_service_build}
 
 
 function setup() {
@@ -32,15 +32,6 @@ function setup() {
 
     # stop and remove if there is a old/failed container hanging around:
     docker stop $BOX_NAME 2>/dev/null ; docker rm -f $BOX_NAME 2>/dev/null
-
-    # Login to the repository so we can publish new containers there:
-    if [ "$?" == 1 ];
-    then
-        echo "Login to docker.supercarers.com FAILED."
-        return 1
-    else
-        echo "Login to docker.supercarers.com OK."
-    fi
 
     return 0
 }
@@ -84,55 +75,19 @@ function build_container() {
 
 function run_tests() {
 
-    if [ "$ON_DEVBOX" = 1 ];
-    then
-        INTERACTIVE=-i
-        echo "On DEVBOX! using interaction e.g INTERACTIVE=$INTERACTIVE"
-        SCP_PG_IMAGE_VER="1.0.0"
-        SCP_PG_IMAGE_TAG="supercarers/scp-postgres:$SCP_PG_IMAGE_VER"
-        echo "On DEVBOX! Setting SCP_PG_IMAGE_VER=$SCP_PG_IMAGE_VER"
-    else
-        # The get latest scp_postgres version number we should use. This
-        # will be available on our docker repo.
-        SCP_PG_IMAGE_VER=$(/usr/bin/etcdctl get /docker/image/scp/postgres/latest)
-        if [ "$?" = 1 ];
-        then
-            echo "Failed to recover version from /docker/image/scp/postgres/latest from etcd!"
-            return 1
-        fi
-        SCP_PG_IMAGE_TAG=docker.supercarers.com/scp-postgres:1.0.0
-        # SCP_PG_IMAGE_TAG=$(/usr/bin/etcdctl get /docker/image/scp/postgres/tag)
-        # if [ "$?" = 1 ];
-        # then
-        #     echo "Failed to recover version from /docker/image/scp/postgres/tag from etcd!"
-        #     return 1
-        # fi
-    fi
-
-    docker stop SCPAPIDB >/dev/null ; docker rm -f SCPAPIDB >/dev/null
-    docker stop SCPAPIRED >/dev/null ; docker rm -f SCPAPIRED >/dev/null
+    docker stop INFLUXDB >/dev/null ; docker rm -f INFLUXDB >/dev/null
 
     docker run -d -t \
-        --name SCPAPIDB \
-        $SCP_PG_IMAGE_TAG
+        --name INFLUXDB \
+        tutum/influxdb
     if [ "$?" == 1 ];
     then
-        echo "Failed to start test Postgres."
-        return 1
-    fi
-
-    docker run -d -t \
-        --name SCPAPIRED \
-        redis
-    if [ "$?" == 1 ];
-    then
-        echo "Failed to start test Redis."
+        echo "Failed to start test InfluxDB."
         return 1
     fi
 
     docker run \
-        --link SCPAPIDB:postgres \
-        --link SCPAPIRED:redis \
+        --link INFLUXDB:influxdb \
         --name $BOX_NAME \
         -v $BUILD_DIR:/data \
         $INTERACTIVE \
@@ -145,44 +100,9 @@ function run_tests() {
     fi
 
     # Clean up:
-    docker stop SCPAPIDB >/dev/null ; docker rm -f SCPAPIDB >/dev/null
-    docker stop SCPAPIRED >/dev/null ; docker rm -f SCPAPIRED >/dev/null
+    docker stop INFLUXDB >/dev/null ; docker rm -f INFLUXDB >/dev/null
 }
 
-
-function publish_container() {
-    # tag to push to our docker repository:
-    docker tag $SCP_API_IMAGE docker.supercarers.com/$SCP_API_IMAGE
-    if [ "$?" == 1 ];
-    then
-        echo "Failed to tag image $SCP_API_IMAGE!"
-        return 1
-    fi
-
-    # publish:
-    docker push docker.supercarers.com/$SCP_API_IMAGE
-    if [ "$?" == 1 ];
-    then
-        echo "Failed to push docker.supercarers.com/$SCP_API_IMAGE!"
-        return 1
-    fi
-
-    # Setting the latest working version of the docker container:
-    #
-    /usr/bin/etcdctl set /docker/image/scp/api/latest $BOX_VERSION
-    if [ "$?" == 1 ];
-    then
-        echo "Failed to set latest version number for docker.supercarers.com/$SCP_API_IMAGE!"
-        return 1
-    fi
-
-    /usr/bin/etcdctl set /docker/image/scp/api/tag docker.supercarers.com/$SCP_API_IMAGE
-    if [ "$?" == 1 ];
-    then
-        echo "Failed to set latest version number for docker.supercarers.com/$SCP_API_IMAGE!"
-        return 1
-    fi
-}
 
 function main() {
     # Don't continue a step in fails.
@@ -206,14 +126,6 @@ function main() {
     if [ "$?" == 1 ];
     then
         echo "Testing container failed!"
-        return 1
-    fi
-
-    print_stage "Publishing the container: v$BOX_VERSION"
-    publish_container
-    if [ "$?" == 1 ];
-    then
-        echo "Building the container failed!"
         return 1
     fi
 
