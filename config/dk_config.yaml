@@ -1,0 +1,19 @@
+docker:
+    base_url: unix://var/run/docker.sock
+
+containers:
+
+    influxdb:
+        image: tutum/influxdb
+        interface: 0.0.0.0
+        entrypoint:
+        auth:
+            user: root
+            password: root
+        export:
+            wait_for_port: db
+            ports:
+                - port: 8083
+                  name: admin
+                - port: 8086
+                  name: db
