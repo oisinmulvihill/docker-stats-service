@@ -34,7 +34,6 @@ function setup() {
     docker stop $BOX_NAME 2>/dev/null ; docker rm -f $BOX_NAME 2>/dev/null
 
     # Login to the repository so we can publish new containers there:
-    docker login -u docker -p d0ck3rc0ff33 docker.supercarers.com
     if [ "$?" == 1 ];
     then
         echo "Login to docker.supercarers.com FAILED."
