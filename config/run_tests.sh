@@ -31,7 +31,7 @@ export BIN=$VENV/bin
 cd /home/stats/stats-service
 
 source $BIN/activate
-$BIN/py.test -sv --cov=stats --pdb
+$BIN/py.test -sv --cov=stats-service
 if [ "$?" == 1 ];
 then
     echo "FAILED: py.test run!"
