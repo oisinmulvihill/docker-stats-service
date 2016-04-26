@@ -75,7 +75,8 @@ function build_container() {
 
 function run_tests() {
 
-    docker stop INFLUXDB >/dev/null ; docker rm -f INFLUXDB >/dev/null
+    # for stop and remove if its present:
+    docker rm -f INFLUXDB 2>/dev/null
 
     docker run -d -t \
         --name INFLUXDB \
@@ -92,7 +93,7 @@ function run_tests() {
         -v $BUILD_DIR:/data \
         $INTERACTIVE \
         -t $IMAGE_NAME \
-        /bin/bash /bin/run_tests.sh
+        /bin/run_tests.sh
     if [ "$?" == 1 ];
     then
         echo "Test run failure."

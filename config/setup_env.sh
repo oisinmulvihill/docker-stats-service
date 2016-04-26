@@ -6,7 +6,7 @@
 # Oisin Mulvihill
 # 2016-04-25
 #
-cd /home/scp
+cd /home/stats
 
 export VENV=/app/pyenv
 export BIN=$VENV/bin
@@ -28,7 +28,7 @@ then
     cp -R /data/wheel_cache/* ~/.cache/*
 fi
 
-# (Once-off) deps to bootstrap environment:
+# Extras needed for testing or the environment on container:
 $BIN/easy_install -U pytest jinja2
 if [ "$?" == 1 ];
 then
@@ -37,8 +37,8 @@ then
 fi
 
 # Set up the 3rd party deps in order:re
-PRJS="apiaccesstoken evasion-common pytest-docker-service-fixtures stats-client stats-service"
-for i in $PRJS; do cd /home/scp/$i ; $BIN/python setup.py develop ; done
+PRJS="apiaccesstoken evasion-common docker-testingaids pytest-docker-service-fixtures stats-client stats-service"
+for i in $PRJS; do cd /home/stats/$i ; $BIN/python setup.py develop ; done
 
 echo "copying out build cache:"
 mkdir -p /data/wheel_cache
