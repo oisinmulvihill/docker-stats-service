@@ -4,7 +4,6 @@
 echo "Recovering deps:"
 cd /home/stats
 
-export SERVER_ENV=development
 export DK_CONFIG_FILE=/home/stats/dk_config.yaml
 
 
@@ -32,7 +31,7 @@ export BIN=$VENV/bin
 cd /home/stats/stats-service
 
 source $BIN/activate
-$BIN/py.test -sv
+$BIN/py.test -sv --cov=stats --pdb
 if [ "$?" == 1 ];
 then
     echo "FAILED: py.test run!"

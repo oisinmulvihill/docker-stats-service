@@ -29,7 +29,7 @@ then
 fi
 
 # Extras needed for testing or the environment on container:
-$BIN/easy_install -U pytest jinja2
+$BIN/easy_install -U pytest jinja2 pytest-cov
 if [ "$?" == 1 ];
 then
     echo "Unable to install bootstrap dependancies!"
