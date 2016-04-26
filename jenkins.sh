@@ -76,10 +76,10 @@ function build_container() {
 function run_tests() {
 
     # for stop and remove if its present:
-    docker rm -f INFLUXDB 2>/dev/null
+    docker rm -f TSTINFLUXDB 2>/dev/null
 
     docker run -d -t \
-        --name INFLUXDB \
+        --name TSTINFLUXDB \
         tutum/influxdb
     if [ "$?" == 1 ];
     then
@@ -88,7 +88,7 @@ function run_tests() {
     fi
 
     docker run \
-        --link INFLUXDB:influxdb \
+        --link TSTINFLUXDB:influxdb \
         --name $BOX_NAME \
         -v $BUILD_DIR:/data \
         $INTERACTIVE \
@@ -101,7 +101,7 @@ function run_tests() {
     fi
 
     # Clean up:
-    docker stop INFLUXDB >/dev/null ; docker rm -f INFLUXDB >/dev/null
+    docker stop TSTINFLUXDB >/dev/null ; docker rm -f TSTINFLUXDB >/dev/null
 }
 
 

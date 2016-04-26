@@ -47,8 +47,8 @@ ADD ./config/run_tests.sh /bin/run_tests.sh
 ADD ./config/gitrev.sh /bin/gitrev.sh
 RUN chmod 755 /bin/gitrev.sh
 ADD ./config/runserver.sh /bin/runserver.sh
+RUN chmod 755 /bin/runserver.sh
 ADD ./config/render_config.py /bin/render_config.py
-ADD ./config/access.json.jinja /etc/access.json.jinja
 ADD ./config/server.ini.template /etc/server.ini.template
 
 WORKDIR /home/stats
