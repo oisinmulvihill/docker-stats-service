@@ -6,8 +6,11 @@ Introduction
 
 The docker container image build, test and release project for stats-service.
 
+GitHub:
  - https://github.com/oisinmulvihill/stats-service
 
+DockerHub:
+ - https://hub.docker.com/r/oisinmulvihill/stats-service/
 
 Build & Test
 ------------
